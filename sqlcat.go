@@ -122,9 +122,9 @@ func buildSQLOffset(b *Builder) string {
 	return " OFFSET " + strconv.Itoa(b.Offset)
 }
 
-// WithCondition associates a condition into the query. In PostgreSQL,
-// you can use positional parameters by inserting `$n` to the condition.
-// It will be replaced by a number staring from the current arguments size.
+// WithCondition associates a condition into the query.
+// For PostgreSQL, you can use positional parameters in a
+// condition by placing `$n` which automatically increments.
 func WithCondition(b *Builder, cond string, args ...interface{}) {
 	if len(args) > 0 {
 		for _, arg := range args {

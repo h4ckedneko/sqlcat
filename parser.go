@@ -6,10 +6,11 @@ import "strings"
 // its equivalent SQL grammar. Each order should follow
 // the pattern `column:direction` which is URL-safe.
 //
-// Example:
-// 	name -> name
-// 	name:asc -> name ASC
-// 	pets.name:asc -> pets.name ASC
+// For example:
+//
+// 	name          ➜ name
+// 	name:asc      ➜ name ASC
+// 	pets.name:asc ➜ pets.name ASC
 //
 func ParseOrders(orders []string) []string {
 	for i, o := range orders {

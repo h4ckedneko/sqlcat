@@ -56,12 +56,7 @@ func (b *Builder) WithOffset(offset int) {
 
 func buildSQL(b *Builder, count bool) (string, []interface{}) {
 	var sb strings.Builder
-	if count {
-		sb.WriteString("SELECT count(*)")
-		sb.WriteString(buildSQLFrom(b))
-		sb.WriteString(buildSQLJoin(b))
-		sb.WriteString(buildSQLWhere(b))
-	} else {
+	if !count {
 		sb.WriteString("SELECT" + buildSQLExp(b))
 		sb.WriteString(buildSQLFrom(b))
 		sb.WriteString(buildSQLJoin(b))
@@ -69,6 +64,13 @@ func buildSQL(b *Builder, count bool) (string, []interface{}) {
 		sb.WriteString(buildSQLOrderBy(b))
 		sb.WriteString(buildSQLLimit(b))
 		sb.WriteString(buildSQLOffset(b))
+	} else {
+		sb.WriteString("SELECT count(*) FROM (")
+		sb.WriteString("SELECT" + buildSQLExp(b))
+		sb.WriteString(buildSQLFrom(b))
+		sb.WriteString(buildSQLJoin(b))
+		sb.WriteString(buildSQLWhere(b))
+		sb.WriteString(") AS countq")
 	}
 	return sb.String(), b.Arguments
 }

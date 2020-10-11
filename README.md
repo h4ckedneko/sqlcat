@@ -7,12 +7,12 @@
 [![Coverage Status](https://gocover.io/_badge/github.com/h4ckedneko/sqlcat)](https://gocover.io/github.com/h4ckedneko/sqlcat)
 [![Report Card Status](https://goreportcard.com/badge/github.com/h4ckedneko/sqlcat)](https://goreportcard.com/report/github.com/h4ckedneko/sqlcat)
 
-Package sqlcat is a dead simple SQL query builder for Go. It comes with a handy little struct that builds SQL query by concatenating its fields. It is not an ORM nor a full-featured SQL query builder, only SELECT is supported and you still need to write some SQL. Its job is to structurally concatenate those SQL to form a complete statement.
+Package sqlcat is a dead simple SQL query builder for Go. It is not an ORM nor a full-featured query builder, only SELECT is supported and you still need to write some SQL. Its job is to structurally concatenate those SQL to form a complete statement.
 
 **Features and benefits:**
 
 -   Minimal API, it only has one struct and two helper functions.
--   Helps you write SQL queries in a structured and declarative way.
+-   Helps you write queries in a structured and declarative way.
 -   Outputs prepared statement to prevent SQL injection.
 -   Supports PostgreSQL positional parameters.
 -   No imported external dependencies.
@@ -58,7 +58,7 @@ func main() {
 	b.WithOffset(30)
 
 	// Associate a condition.
-	// Supports positional parameters.
+	// It prevents SQL injection.
 	typ := "cat"
 	cond := "type = $n"
 	sqlcat.WithCondition(b, cond, typ)
@@ -84,6 +84,18 @@ BenchmarkBuilderToSQLCountBasic-2        3427706               348 ns/op        
 BenchmarkBuilderToSQLComplex-2            767654              1518 ns/op             736 B/op          8 allocs/op
 BenchmarkBuilderToSQLCountComplex-2       901642              1322 ns/op             736 B/op          8 allocs/op
 ```
+
+## Alternatives
+
+If you want a full-featured SQL query builder, check out these packages:
+
+-   [goqu](https://github.com/doug-martin/goqu)
+-   [squirrel](https://github.com/Masterminds/squirrel)
+-   [loukoum](https://github.com/ulule/loukoum)
+
+## Inspiration
+
+This package is based on [Miniflux](https://github.com/miniflux/miniflux)'s code for its [EntryQueryBuilder](https://github.com/miniflux/miniflux/blob/master/storage/entry_query_builder.go).
 
 ## License
 

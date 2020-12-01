@@ -95,7 +95,7 @@ If you want a full-featured SQL query builder, check out these packages:
 
 ## Inspiration
 
-This package is based on [Miniflux](https://github.com/miniflux/miniflux)'s code for its [EntryQueryBuilder](https://github.com/miniflux/miniflux/blob/master/storage/entry_query_builder.go).
+This package is based on [Miniflux](https://github.com/miniflux/v2)'s code of its [EntryQueryBuilder](https://github.com/miniflux/v2/blob/master/storage/entry_query_builder.go).
 
 ## License
 

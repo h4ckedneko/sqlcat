@@ -57,22 +57,22 @@ func TestBuilderToSQLCountForColumns(t *testing.T) {
 
 func TestBuilderToSQLForRelations(t *testing.T) {
 	builder := &sqlcat.Builder{
-		Table:     "pets",
-		Columns:   []string{"pets.*", "owners.*"},
-		Relations: []string{"JOIN owners ON owners.id = pets.owner_id"},
+		Table:     "pets AS p",
+		Columns:   []string{"*"},
+		Relations: []string{"JOIN owners AS o ON o.id = p.owner_id"},
 	}
 	sql, _ := builder.ToSQL()
-	testSQL(t, "SELECT pets.*, owners.* FROM pets JOIN owners ON owners.id = pets.owner_id", sql)
+	testSQL(t, "SELECT * FROM pets AS p JOIN owners AS o ON o.id = p.owner_id", sql)
 }
 
 func TestBuilderToSQLCountForRelations(t *testing.T) {
 	builder := &sqlcat.Builder{
-		Table:     "pets",
-		Columns:   []string{"pets.*", "owners.*"},
-		Relations: []string{"JOIN owners ON owners.id = pets.owner_id"},
+		Table:     "pets AS p",
+		Columns:   []string{"*"},
+		Relations: []string{"JOIN owners AS o ON o.id = p.owner_id"},
 	}
 	sql, _ := builder.ToSQLCount()
-	testSQL(t, "SELECT count(*) FROM (SELECT pets.*, owners.* FROM pets JOIN owners ON owners.id = pets.owner_id) AS countq", sql)
+	testSQL(t, "SELECT count(*) FROM (SELECT * FROM pets AS p JOIN owners AS o ON o.id = p.owner_id) AS countq", sql)
 }
 
 func TestBuilderToSQLForConditions(t *testing.T) {
@@ -99,6 +99,28 @@ func TestBuilderToSQLCountForConditions(t *testing.T) {
 	sql, args := builder.ToSQLCount()
 	testSQL(t, "SELECT count(*) FROM (SELECT * FROM pets WHERE name ILIKE $1 AND (type = 'dog' OR type = 'god') AND breed = ?) AS countq", sql)
 	testArgs(t, []interface{}{"%Inugami Korone%", "spaniel"}, args)
+}
+
+func TestBuilderToSQLForGroups(t *testing.T) {
+	builder := &sqlcat.Builder{
+		Table:   "pets",
+		Columns: []string{"id", "count(owner_id)"},
+		Groups:  []string{"id"},
+		Having:  []string{"count(owner_id) > 1"},
+	}
+	sql, _ := builder.ToSQL()
+	testSQL(t, "SELECT id, count(owner_id) FROM pets GROUP BY id HAVING count(owner_id) > 1", sql)
+}
+
+func TestBuilderToSQLCountForGroups(t *testing.T) {
+	builder := &sqlcat.Builder{
+		Table:   "pets",
+		Columns: []string{"id", "count(owner_id)"},
+		Groups:  []string{"id"},
+		Having:  []string{"count(owner_id) > 1"},
+	}
+	sql, _ := builder.ToSQLCount()
+	testSQL(t, "SELECT count(*) FROM (SELECT id, count(owner_id) FROM pets GROUP BY id HAVING count(owner_id) > 1) AS countq", sql)
 }
 
 func TestBuilderToSQLForOrders(t *testing.T) {
@@ -183,12 +205,14 @@ func BenchmarkBuilderToSQLCountBasic(b *testing.B) {
 
 func BenchmarkBuilderToSQLComplex(b *testing.B) {
 	builder := &sqlcat.Builder{
-		Table:      "pets",
-		Columns:    []string{"pets.*", "owners.*"},
-		Relations:  []string{"JOIN owners ON owners.id = pets.owner_id"},
-		Conditions: []string{"pets.name ILIKE $1", "(pets.type = 'dog' OR pets.type = 'god')", "pets.breed = $2"},
+		Table:      "pets AS p",
+		Columns:    []string{"p.id", "count(p.owner_id)"},
+		Relations:  []string{"JOIN owners AS o ON o.id = p.owner_id"},
+		Conditions: []string{"p.name ILIKE $1", "(p.type = 'dog' OR p.type = 'god')", "p.breed = $2"},
 		Arguments:  []interface{}{"%Inugami Korone%", "spaniel"},
-		Orders:     []string{"pets.name ASC"},
+		Groups:     []string{"p.id"},
+		Having:     []string{"count(p.owner_id) > 1"},
+		Orders:     []string{"name ASC"},
 		Limit:      30,
 		Offset:     30,
 	}
@@ -199,12 +223,14 @@ func BenchmarkBuilderToSQLComplex(b *testing.B) {
 
 func BenchmarkBuilderToSQLCountComplex(b *testing.B) {
 	builder := &sqlcat.Builder{
-		Table:      "pets",
-		Columns:    []string{"pets.*", "owners.*"},
-		Relations:  []string{"JOIN owners ON owners.id = pets.owner_id"},
-		Conditions: []string{"pets.name ILIKE $1", "(pets.type = 'dog' OR pets.type = 'god')", "pets.breed = $2"},
+		Table:      "pets AS p",
+		Columns:    []string{"p.id", "count(p.owner_id)"},
+		Relations:  []string{"JOIN owners AS o ON o.id = p.owner_id"},
+		Conditions: []string{"p.name ILIKE $1", "(p.type = 'dog' OR p.type = 'god')", "p.breed = $2"},
 		Arguments:  []interface{}{"%Inugami Korone%", "spaniel"},
-		Orders:     []string{"pets.name ASC"},
+		Groups:     []string{"p.id"},
+		Having:     []string{"count(p.owner_id) > 1"},
+		Orders:     []string{"name ASC"},
 		Limit:      30,
 		Offset:     30,
 	}

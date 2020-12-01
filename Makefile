@@ -1,4 +1,4 @@
-.PHONY = test bench format
+.PHONY: test bench format
 
 test:
 	@ go test -v

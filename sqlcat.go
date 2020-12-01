@@ -18,6 +18,8 @@ type Builder struct {
 	Relations  []string
 	Conditions []string
 	Arguments  []interface{}
+	Groups     []string
+	Having     []string
 	Orders     []string
 	Limit      int
 	Offset     int
@@ -61,6 +63,8 @@ func buildSQL(b *Builder, count bool) (string, []interface{}) {
 		sb.WriteString(buildSQLFrom(b))
 		sb.WriteString(buildSQLJoin(b))
 		sb.WriteString(buildSQLWhere(b))
+		sb.WriteString(buildSQLGroupBy(b))
+		sb.WriteString(buildSQLHaving(b))
 		sb.WriteString(buildSQLOrderBy(b))
 		sb.WriteString(buildSQLLimit(b))
 		sb.WriteString(buildSQLOffset(b))
@@ -70,58 +74,74 @@ func buildSQL(b *Builder, count bool) (string, []interface{}) {
 		sb.WriteString(buildSQLFrom(b))
 		sb.WriteString(buildSQLJoin(b))
 		sb.WriteString(buildSQLWhere(b))
+		sb.WriteString(buildSQLGroupBy(b))
+		sb.WriteString(buildSQLHaving(b))
 		sb.WriteString(") AS countq")
 	}
 	return sb.String(), b.Arguments
 }
 
 func buildSQLFrom(b *Builder) string {
-	if b.Table == "" {
-		return ""
+	if b.Table != "" {
+		return " FROM " + b.Table
 	}
-	return " FROM " + b.Table
+	return ""
 }
 
 func buildSQLExp(b *Builder) string {
-	if len(b.Columns) < 1 {
-		return ""
+	if len(b.Columns) > 0 {
+		return " " + strings.Join(b.Columns, sepComma)
 	}
-	return " " + strings.Join(b.Columns, sepComma)
+	return ""
 }
 
 func buildSQLJoin(b *Builder) string {
-	if len(b.Relations) < 1 {
-		return ""
+	if len(b.Relations) > 0 {
+		return " " + strings.Join(b.Relations, sepWS)
 	}
-	return " " + strings.Join(b.Relations, sepWS)
+	return ""
 }
 
 func buildSQLWhere(b *Builder) string {
-	if len(b.Conditions) < 1 {
-		return ""
+	if len(b.Conditions) > 0 {
+		return " WHERE " + strings.Join(b.Conditions, sepAnd)
 	}
-	return " WHERE " + strings.Join(b.Conditions, sepAnd)
+	return ""
+}
+
+func buildSQLGroupBy(b *Builder) string {
+	if len(b.Groups) > 0 {
+		return " GROUP BY " + strings.Join(b.Groups, sepComma)
+	}
+	return ""
+}
+
+func buildSQLHaving(b *Builder) string {
+	if len(b.Having) > 0 {
+		return " HAVING " + strings.Join(b.Having, sepAnd)
+	}
+	return ""
 }
 
 func buildSQLOrderBy(b *Builder) string {
-	if len(b.Orders) < 1 {
-		return ""
+	if len(b.Orders) > 0 {
+		return " ORDER BY " + strings.Join(b.Orders, sepComma)
 	}
-	return " ORDER BY " + strings.Join(b.Orders, sepComma)
+	return ""
 }
 
 func buildSQLLimit(b *Builder) string {
-	if b.Limit < 1 {
-		return ""
+	if b.Limit > 0 {
+		return " LIMIT " + strconv.Itoa(b.Limit)
 	}
-	return " LIMIT " + strconv.Itoa(b.Limit)
+	return ""
 }
 
 func buildSQLOffset(b *Builder) string {
-	if b.Offset < 1 {
-		return ""
+	if b.Offset > 0 {
+		return " OFFSET " + strconv.Itoa(b.Offset)
 	}
-	return " OFFSET " + strconv.Itoa(b.Offset)
+	return ""
 }
 
 // WithCondition associates a condition into the query.
